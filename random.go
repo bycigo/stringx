@@ -1,11 +1,8 @@
 package stringx
 
 import (
-	"math/rand"
+	"math/rand/v2"
 	"strings"
-	"sync"
-	"sync/atomic"
-	"time"
 )
 
 // DefaultRandomFactory is the default RandomFactory used for generating random strings.
@@ -36,33 +33,6 @@ func RandomAlphabet(alphabet string) RandomOption {
 	}
 }
 
-var randomSourcePool = newRandomSourceFactory()
-
-type randomSourceFactory struct {
-	seedCount  atomic.Int64
-	sourcePool sync.Pool
-}
-
-func newRandomSourceFactory() *randomSourceFactory {
-	f := &randomSourceFactory{}
-	f.sourcePool = sync.Pool{
-		New: func() any {
-			count := f.seedCount.Add(1)
-			seed := time.Now().UnixNano() + count
-			return rand.NewSource(seed)
-		},
-	}
-	return f
-}
-
-func (f *randomSourceFactory) acquireSource() rand.Source {
-	return f.sourcePool.Get().(rand.Source)
-}
-
-func (f *randomSourceFactory) releaseSource(source rand.Source) {
-	f.sourcePool.Put(source)
-}
-
 type randomFactory struct {
 	opts RandomOptions
 }
@@ -89,16 +59,11 @@ func (f *randomFactory) MakeRandomString(length int) string {
 		return ""
 	}
 
-	source := randomSourcePool.acquireSource()
-	defer randomSourcePool.releaseSource(source)
-
-	alphabetRunes := f.opts.Alphabet
-	alphabetLen := int64(len(alphabetRunes))
-
 	b := strings.Builder{}
 	b.Grow(length)
 	for i := 0; i < length; i++ {
-		b.WriteRune(alphabetRunes[source.Int63()%alphabetLen])
+		n := rand.IntN(len(f.opts.Alphabet))
+		b.WriteRune(f.opts.Alphabet[n])
 	}
 	return b.String()
 }
