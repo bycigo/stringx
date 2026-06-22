@@ -2,6 +2,8 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/bycigo/stringx.svg)](https://pkg.go.dev/github.com/bycigo/stringx)
 
+English | [简体中文](README_zh.md)
+
 Extended string functions for Go with Unicode support.
 
 ## Installation
