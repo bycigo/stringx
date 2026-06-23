@@ -50,6 +50,18 @@ More examples can be found in the [example_test.go](example_test.go).
 | `FromBytes(bytes []byte) string` | Zero-copy conversion from bytes to string |
 | `ToBytes(s string) []byte` | Zero-copy conversion from string to bytes |
 
+### Password Functions
+
+| Function | Description |
+|----------|-------------|
+| `Password(length int, opt ...PasswordOption) string` | Generates a cryptographically secure password (uses `crypto/rand` by default) |
+| `NewPasswordFactory() PasswordFactory` | Creates a factory backed by `math/rand/v2` (fast, non-cryptographic) |
+| `NewSecuredPasswordFactory() PasswordFactory` | Creates a factory backed by `crypto/rand` (secure) |
+| `NewPasswordFactoryWithSource(src PasswordSource) PasswordFactory` | Creates a non-cryptographic factory with a custom character source |
+| `NewSecuredPasswordFactoryWithSource(src PasswordSource) PasswordFactory` | Creates a secure factory with a custom character source |
+
+Use `PasswordIncludes` to choose which character kinds (`PasswordLetter`, `PasswordNumber`, `PasswordSymbol`, `PasswordSpace`) the password may contain. The result always includes at least one character from each selected kind. The default includes letters, numbers and symbols.
+
 ## License
 
 See [LICENSE](LICENSE) for details.

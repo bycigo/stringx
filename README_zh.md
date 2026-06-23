@@ -50,6 +50,19 @@ go get github.com/bycigo/stringx
 | `FromBytes(bytes []byte) string` | 零拷贝地将字节切片转换为字符串 |
 | `ToBytes(s string) []byte` | 零拷贝地将字符串转换为字节切片 |
 
+### 密码生成函数
+
+| 函数 | 说明 |
+|----------|-------------|
+| `Password(length int, opt ...PasswordOption) string` | 生成加密安全的密码（默认使用 `crypto/rand`） |
+| `NewPasswordFactory() PasswordFactory` | 创建基于 `math/rand/v2` 的工厂（速度快，非加密安全） |
+| `NewSecuredPasswordFactory() PasswordFactory` | 创建基于 `crypto/rand` 的工厂（加密安全） |
+| `NewPasswordFactoryWithSource(src PasswordSource) PasswordFactory` | 创建带自定义字符源的非加密安全工厂 |
+| `NewSecuredPasswordFactoryWithSource(src PasswordSource) PasswordFactory` | 创建带自定义字符源的加密安全工厂 |
+
+通过 `PasswordIncludes` 选择密码可包含的字符类型（`PasswordLetter` 字母、`PasswordNumber` 数字、`PasswordSymbol` 符号、`PasswordSpace` 空格）。生成结果保证每种被选中的类型至少出现一个字符。默认包含字母、数字和符号。
+
+
 ## 许可证
 
 详情请参见 [LICENSE](LICENSE)。

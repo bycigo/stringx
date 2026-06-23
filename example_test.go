@@ -127,3 +127,58 @@ func ExampleToBytes() {
 	// Output:
 	// hello world
 }
+
+func ExamplePassword() {
+	// Generate a secure password of length 16 using the default character sets
+	// (letters, numbers and symbols).
+	pwd := stringx.Password(16)
+	fmt.Printf("Password length: %d\n", len(pwd))
+	// Output:
+	// Password length: 16
+}
+
+func ExamplePassword_includes() {
+	// Restrict the password to letters and numbers only.
+	pwd := stringx.Password(12, stringx.PasswordIncludes{
+		stringx.PasswordLetter,
+		stringx.PasswordNumber,
+	})
+	fmt.Printf("Password length: %d\n", len(pwd))
+	// Output:
+	// Password length: 12
+}
+
+func ExampleNewPasswordFactory() {
+	// A non-cryptographic factory is faster and suitable for non-sensitive
+	// scenarios such as test fixtures.
+	factory := stringx.NewPasswordFactory()
+	pwd := factory.MakePassword(20)
+	fmt.Printf("Password length: %d\n", len(pwd))
+	// Output:
+	// Password length: 20
+}
+
+func ExampleNewSecuredPasswordFactory() {
+	// A cryptographically secure factory backed by crypto/rand.
+	factory := stringx.NewSecuredPasswordFactory()
+	pwd := factory.MakePassword(20)
+	fmt.Printf("Password length: %d\n", len(pwd))
+	// Output:
+	// Password length: 20
+}
+
+func ExampleNewPasswordFactoryWithSource() {
+	// Provide a custom character source to fully control the alphabet.
+	src := stringx.PasswordSource{
+		stringx.PasswordLetter: []byte("abcdef"),
+		stringx.PasswordNumber: []byte("0123"),
+	}
+	factory := stringx.NewPasswordFactoryWithSource(src)
+	pwd := factory.MakePassword(16, stringx.PasswordIncludes{
+		stringx.PasswordLetter,
+		stringx.PasswordNumber,
+	})
+	fmt.Printf("Password length: %d\n", len(pwd))
+	// Output:
+	// Password length: 16
+}
