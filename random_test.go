@@ -1,14 +1,16 @@
-package stringx
+package stringx_test
 
 import (
 	"strings"
 	"sync"
 	"testing"
+
+	"github.com/bycigo/stringx"
 )
 
 func TestNewRandomFactory(t *testing.T) {
 	t.Run("default options", func(t *testing.T) {
-		factory := NewRandomFactory()
+		factory := stringx.NewRandomFactory()
 		if factory == nil {
 			t.Fatal("expected non-nil factory")
 		}
@@ -16,7 +18,7 @@ func TestNewRandomFactory(t *testing.T) {
 
 	t.Run("custom alphabet", func(t *testing.T) {
 		customAlphabet := "abc123"
-		factory := NewRandomFactory(RandomAlphabet(customAlphabet))
+		factory := stringx.NewRandomFactory(stringx.RandomAlphabet(customAlphabet))
 		if factory == nil {
 			t.Fatal("expected non-nil factory")
 		}
@@ -32,7 +34,7 @@ func TestNewRandomFactory(t *testing.T) {
 }
 
 func TestRandomFactory_MakeRandomString(t *testing.T) {
-	factory := NewRandomFactory()
+	factory := stringx.NewRandomFactory()
 
 	t.Run("generates string of correct length", func(t *testing.T) {
 		lengths := []int{1, 5, 10, 50, 100}
@@ -56,7 +58,7 @@ func TestRandomFactory_MakeRandomString(t *testing.T) {
 	t.Run("only contains alphabet characters", func(t *testing.T) {
 		str := factory.MakeRandomString(1000)
 		for _, c := range str {
-			if !strings.ContainsRune(DefaultRandomAlphabet, c) {
+			if !strings.ContainsRune(stringx.DefaultRandomAlphabet, c) {
 				t.Errorf("generated string contains character %c not in default alphabet", c)
 			}
 		}
@@ -82,7 +84,7 @@ func TestRandom(t *testing.T) {
 	t.Run("generates string of correct length", func(t *testing.T) {
 		lengths := []int{1, 5, 10, 50, 100}
 		for _, length := range lengths {
-			str := Random(length)
+			str := stringx.Random(length)
 			if len(str) != length {
 				t.Errorf("expected length %d, got %d", length, len(str))
 			}
@@ -91,7 +93,7 @@ func TestRandom(t *testing.T) {
 }
 
 func TestRandomFactory_Concurrent(t *testing.T) {
-	factory := NewRandomFactory()
+	factory := stringx.NewRandomFactory()
 	var wg sync.WaitGroup
 	numGoroutines := 100
 	strLength := 50
@@ -120,7 +122,7 @@ func TestRandomFactory_Concurrent(t *testing.T) {
 
 func TestRandomAlphabet(t *testing.T) {
 	t.Run("numeric only", func(t *testing.T) {
-		factory := NewRandomFactory(RandomAlphabet("0123456789"))
+		factory := stringx.NewRandomFactory(stringx.RandomAlphabet("0123456789"))
 		str := factory.MakeRandomString(100)
 		for _, c := range str {
 			if c < '0' || c > '9' {
@@ -130,7 +132,7 @@ func TestRandomAlphabet(t *testing.T) {
 	})
 
 	t.Run("lowercase only", func(t *testing.T) {
-		factory := NewRandomFactory(RandomAlphabet("abcdefghijklmnopqrstuvwxyz"))
+		factory := stringx.NewRandomFactory(stringx.RandomAlphabet("abcdefghijklmnopqrstuvwxyz"))
 		str := factory.MakeRandomString(100)
 		for _, c := range str {
 			if c < 'a' || c > 'z' {
@@ -140,7 +142,7 @@ func TestRandomAlphabet(t *testing.T) {
 	})
 
 	t.Run("single character", func(t *testing.T) {
-		factory := NewRandomFactory(RandomAlphabet("x"))
+		factory := stringx.NewRandomFactory(stringx.RandomAlphabet("x"))
 		str := factory.MakeRandomString(10)
 		if str != "xxxxxxxxxx" {
 			t.Errorf("expected 'xxxxxxxxxx', got %s", str)
@@ -149,11 +151,11 @@ func TestRandomAlphabet(t *testing.T) {
 
 	t.Run("unicode alphabet", func(t *testing.T) {
 		unicodeAlphabet := "你好世界"
-		factory := NewRandomFactory(RandomAlphabet(unicodeAlphabet))
+		factory := stringx.NewRandomFactory(stringx.RandomAlphabet(unicodeAlphabet))
 		str := factory.MakeRandomString(100)
 		// Verify string length is correct (in runes, not bytes)
-		if Len(str) != 100 {
-			t.Errorf("expected rune length 100, got %d", Len(str))
+		if stringx.Len(str) != 100 {
+			t.Errorf("expected rune length 100, got %d", stringx.Len(str))
 		}
 		// Verify all characters are from the alphabet
 		for _, c := range str {
@@ -165,11 +167,11 @@ func TestRandomAlphabet(t *testing.T) {
 
 	t.Run("mixed ascii and unicode alphabet", func(t *testing.T) {
 		mixedAlphabet := "abc你好"
-		factory := NewRandomFactory(RandomAlphabet(mixedAlphabet))
+		factory := stringx.NewRandomFactory(stringx.RandomAlphabet(mixedAlphabet))
 		str := factory.MakeRandomString(100)
 		// Verify string length is correct (in runes, not bytes)
-		if Len(str) != 100 {
-			t.Errorf("expected rune length 100, got %d", Len(str))
+		if stringx.Len(str) != 100 {
+			t.Errorf("expected rune length 100, got %d", stringx.Len(str))
 		}
 		// Verify all characters are from the alphabet
 		for _, c := range str {
@@ -181,7 +183,7 @@ func TestRandomAlphabet(t *testing.T) {
 }
 
 func BenchmarkRandomFactory_MakeRandomString(b *testing.B) {
-	factory := NewRandomFactory()
+	factory := stringx.NewRandomFactory()
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -190,7 +192,7 @@ func BenchmarkRandomFactory_MakeRandomString(b *testing.B) {
 }
 
 func BenchmarkRandomFactory_MakeRandomString_Concurrent(b *testing.B) {
-	factory := NewRandomFactory()
+	factory := stringx.NewRandomFactory()
 	b.ReportAllocs()
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {

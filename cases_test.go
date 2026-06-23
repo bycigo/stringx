@@ -1,6 +1,10 @@
-package stringx
+package stringx_test
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/bycigo/stringx"
+)
 
 func TestCamelCase(t *testing.T) {
 	tests := []struct {
@@ -25,7 +29,7 @@ func TestCamelCase(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := CamelCase(tt.input)
+			result := stringx.CamelCase(tt.input)
 			if result != tt.expected {
 				t.Errorf("CamelCase(%q) = %q, want %q", tt.input, result, tt.expected)
 			}
@@ -56,7 +60,7 @@ func TestPascalCase(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := PascalCase(tt.input)
+			result := stringx.PascalCase(tt.input)
 			if result != tt.expected {
 				t.Errorf("PascalCase(%q) = %q, want %q", tt.input, result, tt.expected)
 			}
@@ -93,7 +97,7 @@ func TestSnakeCase(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := SnakeCase(tt.input)
+			result := stringx.SnakeCase(tt.input)
 			if result != tt.expected {
 				t.Errorf("SnakeCase(%q) = %q, want %q", tt.input, result, tt.expected)
 			}
@@ -130,7 +134,7 @@ func TestKebabCase(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := KebabCase(tt.input)
+			result := stringx.KebabCase(tt.input)
 			if result != tt.expected {
 				t.Errorf("KebabCase(%q) = %q, want %q", tt.input, result, tt.expected)
 			}

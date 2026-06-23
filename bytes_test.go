@@ -1,8 +1,10 @@
-package stringx
+package stringx_test
 
 import (
 	"strings"
 	"testing"
+
+	"github.com/bycigo/stringx"
 )
 
 func TestFromBytes(t *testing.T) {
@@ -18,7 +20,7 @@ func TestFromBytes(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := FromBytes(tt.arg); got != tt.want {
+			if got := stringx.FromBytes(tt.arg); got != tt.want {
 				t.Errorf("FromBytes() = %v, want %v", got, tt.want)
 			}
 		})
@@ -33,7 +35,7 @@ func BenchmarkFromBytes(b *testing.B) {
 
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		fromBytesResult = FromBytes(data)
+		fromBytesResult = stringx.FromBytes(data)
 	}
 }
 
@@ -59,7 +61,7 @@ func TestToBytes(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ToBytes(tt.arg); string(got) != string(tt.want) {
+			if got := stringx.ToBytes(tt.arg); string(got) != string(tt.want) {
 				t.Errorf("ToBytes() = %v, want %v", got, tt.want)
 			}
 		})
@@ -75,7 +77,7 @@ func BenchmarkToBytes(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		toBytesResult = ToBytes(s)
+		toBytesResult = stringx.ToBytes(s)
 	}
 }
 

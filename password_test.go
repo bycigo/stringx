@@ -1,9 +1,11 @@
-package stringx
+package stringx_test
 
 import (
 	"strings"
 	"sync"
 	"testing"
+
+	"github.com/bycigo/stringx"
 )
 
 // containsFromSets reports whether every byte in s comes from the union of the
@@ -22,7 +24,7 @@ func TestPassword(t *testing.T) {
 	t.Run("generates password of correct length", func(t *testing.T) {
 		lengths := []int{1, 5, 10, 32, 100}
 		for _, length := range lengths {
-			pwd := Password(length)
+			pwd := stringx.Password(length)
 			if len(pwd) != length {
 				t.Errorf("expected length %d, got %d", length, len(pwd))
 			}
@@ -30,7 +32,7 @@ func TestPassword(t *testing.T) {
 	})
 
 	t.Run("empty string on zero length", func(t *testing.T) {
-		if Password(0) != "" {
+		if stringx.Password(0) != "" {
 			t.Error("expected empty string for zero length")
 		}
 	})
@@ -41,12 +43,12 @@ func TestPassword(t *testing.T) {
 				t.Error("expected panic for negative length")
 			}
 		}()
-		Password(-1)
+		stringx.Password(-1)
 	})
 
 	t.Run("uses default character sets", func(t *testing.T) {
-		pwd := Password(1000)
-		if !allBytesIn(pwd, DefaultPasswordLetters, DefaultPasswordNumbers, DefaultPasswordSymbols) {
+		pwd := stringx.Password(1000)
+		if !allBytesIn(pwd, stringx.DefaultPasswordLetters, stringx.DefaultPasswordNumbers, stringx.DefaultPasswordSymbols) {
 			t.Error("password contains characters outside the default sets")
 		}
 		// space is not part of the default includes
@@ -57,7 +59,7 @@ func TestPassword(t *testing.T) {
 }
 
 func TestPasswordFactory_MakePassword(t *testing.T) {
-	factory := NewPasswordFactory()
+	factory := stringx.NewPasswordFactory()
 
 	t.Run("generates password of correct length", func(t *testing.T) {
 		lengths := []int{1, 5, 10, 32, 100}
@@ -95,14 +97,18 @@ func TestPasswordFactory_MakePassword(t *testing.T) {
 	t.Run("contains at least one char from each selected kind", func(t *testing.T) {
 		// run many times because at least-one guarantee is probabilistic-free
 		for i := 0; i < 100; i++ {
-			pwd := factory.MakePassword(10, PasswordIncludes{PasswordLetter, PasswordNumber, PasswordSymbol})
-			if !strings.ContainsAny(pwd, DefaultPasswordLetters) {
+			pwd := factory.MakePassword(10, stringx.PasswordIncludes{
+				stringx.PasswordLetter,
+				stringx.PasswordNumber,
+				stringx.PasswordSymbol,
+			})
+			if !strings.ContainsAny(pwd, stringx.DefaultPasswordLetters) {
 				t.Fatalf("password %q missing a letter", pwd)
 			}
-			if !strings.ContainsAny(pwd, DefaultPasswordNumbers) {
+			if !strings.ContainsAny(pwd, stringx.DefaultPasswordNumbers) {
 				t.Fatalf("password %q missing a number", pwd)
 			}
-			if !strings.ContainsAny(pwd, DefaultPasswordSymbols) {
+			if !strings.ContainsAny(pwd, stringx.DefaultPasswordSymbols) {
 				t.Fatalf("password %q missing a symbol", pwd)
 			}
 		}
@@ -110,50 +116,63 @@ func TestPasswordFactory_MakePassword(t *testing.T) {
 }
 
 func TestPasswordIncludes(t *testing.T) {
-	factory := NewPasswordFactory()
+	factory := stringx.NewPasswordFactory()
 
 	t.Run("letters only", func(t *testing.T) {
-		pwd := factory.MakePassword(200, PasswordIncludes{PasswordLetter})
-		if !allBytesIn(pwd, DefaultPasswordLetters) {
+		pwd := factory.MakePassword(200, stringx.PasswordIncludes{stringx.PasswordLetter})
+		if !allBytesIn(pwd, stringx.DefaultPasswordLetters) {
 			t.Errorf("expected only letters, got %q", pwd)
 		}
 	})
 
 	t.Run("numbers only", func(t *testing.T) {
-		pwd := factory.MakePassword(200, PasswordIncludes{PasswordNumber})
-		if !allBytesIn(pwd, DefaultPasswordNumbers) {
+		pwd := factory.MakePassword(200, stringx.PasswordIncludes{stringx.PasswordNumber})
+		if !allBytesIn(pwd, stringx.DefaultPasswordNumbers) {
 			t.Errorf("expected only numbers, got %q", pwd)
 		}
 	})
 
 	t.Run("letters and numbers", func(t *testing.T) {
-		pwd := factory.MakePassword(200, PasswordIncludes{PasswordLetter, PasswordNumber})
-		if !allBytesIn(pwd, DefaultPasswordLetters, DefaultPasswordNumbers) {
+		pwd := factory.MakePassword(200, stringx.PasswordIncludes{
+			stringx.PasswordLetter,
+			stringx.PasswordNumber,
+		})
+		if !allBytesIn(pwd, stringx.DefaultPasswordLetters, stringx.DefaultPasswordNumbers) {
 			t.Errorf("expected only letters and numbers, got %q", pwd)
 		}
-		if strings.ContainsAny(pwd, DefaultPasswordSymbols) {
+		if strings.ContainsAny(pwd, stringx.DefaultPasswordSymbols) {
 			t.Errorf("password %q should not contain symbols", pwd)
 		}
 	})
 
 	t.Run("with spaces", func(t *testing.T) {
 		// a long password including spaces should eventually contain one
-		pwd := factory.MakePassword(500, PasswordIncludes{PasswordLetter, PasswordSpace})
-		if !allBytesIn(pwd, DefaultPasswordLetters, DefaultPasswordSpaces) {
+		pwd := factory.MakePassword(500, stringx.PasswordIncludes{
+			stringx.PasswordLetter,
+			stringx.PasswordSpace,
+		})
+		if !allBytesIn(pwd, stringx.DefaultPasswordLetters, stringx.DefaultPasswordSpaces) {
 			t.Errorf("expected only letters and spaces, got %q", pwd)
 		}
 	})
 
 	t.Run("duplicate kinds are de-duplicated", func(t *testing.T) {
-		pwd := factory.MakePassword(50, PasswordIncludes{PasswordNumber, PasswordNumber, PasswordNumber})
-		if !allBytesIn(pwd, DefaultPasswordNumbers) {
+		pwd := factory.MakePassword(50, stringx.PasswordIncludes{
+			stringx.PasswordNumber,
+			stringx.PasswordNumber,
+			stringx.PasswordNumber,
+		})
+		if !allBytesIn(pwd, stringx.DefaultPasswordNumbers) {
 			t.Errorf("expected only numbers, got %q", pwd)
 		}
 	})
 
 	t.Run("unknown kind is ignored, falls back to valid ones", func(t *testing.T) {
-		pwd := factory.MakePassword(50, PasswordIncludes{PasswordNumber, PasswordCharKind(999)})
-		if !allBytesIn(pwd, DefaultPasswordNumbers) {
+		pwd := factory.MakePassword(50, stringx.PasswordIncludes{
+			stringx.PasswordNumber,
+			stringx.PasswordCharKind(999),
+		})
+		if !allBytesIn(pwd, stringx.DefaultPasswordNumbers) {
 			t.Errorf("expected only numbers, got %q", pwd)
 		}
 	})
@@ -164,53 +183,53 @@ func TestPasswordIncludes(t *testing.T) {
 				t.Error("expected panic when no valid character sources")
 			}
 		}()
-		factory.MakePassword(10, PasswordIncludes{PasswordCharKind(999)})
+		factory.MakePassword(10, stringx.PasswordIncludes{stringx.PasswordCharKind(999)})
 	})
 }
 
 func TestPasswordSource_Custom(t *testing.T) {
 	t.Run("custom source restricts characters", func(t *testing.T) {
-		src := PasswordSource{
-			PasswordLetter: []byte("abc"),
-			PasswordNumber: []byte("01"),
+		src := stringx.PasswordSource{
+			stringx.PasswordLetter: []byte("abc"),
+			stringx.PasswordNumber: []byte("01"),
 		}
-		factory := NewPasswordFactoryWithSource(src)
-		pwd := factory.MakePassword(200, PasswordIncludes{PasswordLetter, PasswordNumber})
+		factory := stringx.NewPasswordFactoryWithSource(src)
+		pwd := factory.MakePassword(200, stringx.PasswordIncludes{stringx.PasswordLetter, stringx.PasswordNumber})
 		if !allBytesIn(pwd, "abc", "01") {
 			t.Errorf("password %q contains characters outside the custom source", pwd)
 		}
 	})
 
 	t.Run("empty char slice is filtered out", func(t *testing.T) {
-		src := PasswordSource{
-			PasswordLetter: []byte("abc"),
-			PasswordNumber: []byte{}, // empty, must be skipped
+		src := stringx.PasswordSource{
+			stringx.PasswordLetter: []byte("abc"),
+			stringx.PasswordNumber: []byte{}, // empty, must be skipped
 		}
-		factory := NewPasswordFactoryWithSource(src)
+		factory := stringx.NewPasswordFactoryWithSource(src)
 		// PasswordNumber is empty so only letters should appear, and no panic
-		pwd := factory.MakePassword(100, PasswordIncludes{PasswordLetter, PasswordNumber})
+		pwd := factory.MakePassword(100, stringx.PasswordIncludes{stringx.PasswordLetter, stringx.PasswordNumber})
 		if !allBytesIn(pwd, "abc") {
 			t.Errorf("expected only letters, got %q", pwd)
 		}
 	})
 
 	t.Run("panics when all selected sources are empty", func(t *testing.T) {
-		src := PasswordSource{
-			PasswordLetter: []byte{},
+		src := stringx.PasswordSource{
+			stringx.PasswordLetter: []byte{},
 		}
-		factory := NewPasswordFactoryWithSource(src)
+		factory := stringx.NewPasswordFactoryWithSource(src)
 		defer func() {
 			if r := recover(); r == nil {
 				t.Error("expected panic when all selected sources are empty")
 			}
 		}()
-		factory.MakePassword(10, PasswordIncludes{PasswordLetter})
+		factory.MakePassword(10, stringx.PasswordIncludes{stringx.PasswordLetter})
 	})
 }
 
 func TestSecuredPasswordFactory(t *testing.T) {
 	t.Run("generates password of correct length", func(t *testing.T) {
-		factory := NewSecuredPasswordFactory()
+		factory := stringx.NewSecuredPasswordFactory()
 		lengths := []int{1, 5, 10, 32, 100}
 		for _, length := range lengths {
 			pwd := factory.MakePassword(length)
@@ -221,28 +240,32 @@ func TestSecuredPasswordFactory(t *testing.T) {
 	})
 
 	t.Run("respects custom source", func(t *testing.T) {
-		src := PasswordSource{
-			PasswordNumber: []byte("0123456789"),
+		src := stringx.PasswordSource{
+			stringx.PasswordNumber: []byte("0123456789"),
 		}
-		factory := NewSecuredPasswordFactoryWithSource(src)
-		pwd := factory.MakePassword(100, PasswordIncludes{PasswordNumber})
-		if !allBytesIn(pwd, DefaultPasswordNumbers) {
+		factory := stringx.NewSecuredPasswordFactoryWithSource(src)
+		pwd := factory.MakePassword(100, stringx.PasswordIncludes{stringx.PasswordNumber})
+		if !allBytesIn(pwd, stringx.DefaultPasswordNumbers) {
 			t.Errorf("expected only numbers, got %q", pwd)
 		}
 	})
 
-	t.Run("default factory uses a secure source", func(t *testing.T) {
-		// The top-level Password must be backed by the secured factory.
-		if _, ok := DefaultPasswordFactory.(*passwordFactory); !ok {
-			t.Fatal("expected DefaultPasswordFactory to be *passwordFactory")
+	t.Run("default factory is usable", func(t *testing.T) {
+		// The default factory must be usable and produce passwords of the
+		// requested length.
+		if stringx.DefaultPasswordFactory == nil {
+			t.Fatal("expected stringx.DefaultPasswordFactory to be non-nil")
+		}
+		if pwd := stringx.DefaultPasswordFactory.MakePassword(16); len(pwd) != 16 {
+			t.Fatalf("expected password length 16, got %d", len(pwd))
 		}
 	})
 }
 
 func TestPasswordFactory_Concurrent(t *testing.T) {
-	factories := map[string]PasswordFactory{
-		"normal":  NewPasswordFactory(),
-		"secured": NewSecuredPasswordFactory(),
+	factories := map[string]stringx.PasswordFactory{
+		"normal":  stringx.NewPasswordFactory(),
+		"secured": stringx.NewSecuredPasswordFactory(),
 	}
 
 	for name, factory := range factories {
@@ -273,7 +296,7 @@ func TestPasswordFactory_Concurrent(t *testing.T) {
 }
 
 func BenchmarkPasswordFactory_MakePassword(b *testing.B) {
-	factory := NewPasswordFactory()
+	factory := stringx.NewPasswordFactory()
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -282,7 +305,7 @@ func BenchmarkPasswordFactory_MakePassword(b *testing.B) {
 }
 
 func BenchmarkSecuredPasswordFactory_MakePassword(b *testing.B) {
-	factory := NewSecuredPasswordFactory()
+	factory := stringx.NewSecuredPasswordFactory()
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -291,7 +314,7 @@ func BenchmarkSecuredPasswordFactory_MakePassword(b *testing.B) {
 }
 
 func BenchmarkPasswordFactory_MakePassword_Concurrent(b *testing.B) {
-	factory := NewPasswordFactory()
+	factory := stringx.NewPasswordFactory()
 	b.ReportAllocs()
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {

@@ -1,6 +1,10 @@
-package stringx
+package stringx_test
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/bycigo/stringx"
+)
 
 func TestLen(t *testing.T) {
 	tests := []struct {
@@ -19,8 +23,8 @@ func TestLen(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := Len(tt.s); got != tt.want {
-				t.Errorf("Len(%q) = %v, want %v", tt.s, got, tt.want)
+			if got := stringx.Len(tt.s); got != tt.want {
+				t.Errorf("stringx.Len(%q) = %v, want %v", tt.s, got, tt.want)
 			}
 		})
 	}
@@ -43,8 +47,8 @@ func TestReverse(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := Reverse(tt.s); got != tt.want {
-				t.Errorf("Reverse(%q) = %v, want %v", tt.s, got, tt.want)
+			if got := stringx.Reverse(tt.s); got != tt.want {
+				t.Errorf("stringx.Reverse(%q) = %v, want %v", tt.s, got, tt.want)
 			}
 		})
 	}
@@ -74,8 +78,8 @@ func TestPadLeft(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := PadLeft(tt.s, tt.length, tt.padding); got != tt.want {
-				t.Errorf("PadLeft(%q, %v, %q) = %v, want %v", tt.s, tt.length, tt.padding, got, tt.want)
+			if got := stringx.PadLeft(tt.s, tt.length, tt.padding); got != tt.want {
+				t.Errorf("stringx.PadLeft(%q, %v, %q) = %v, want %v", tt.s, tt.length, tt.padding, got, tt.want)
 			}
 		})
 	}
@@ -105,8 +109,8 @@ func TestPadRight(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := PadRight(tt.s, tt.length, tt.padding); got != tt.want {
-				t.Errorf("PadRight(%q, %v, %q) = %v, want %v", tt.s, tt.length, tt.padding, got, tt.want)
+			if got := stringx.PadRight(tt.s, tt.length, tt.padding); got != tt.want {
+				t.Errorf("stringx.PadRight(%q, %v, %q) = %v, want %v", tt.s, tt.length, tt.padding, got, tt.want)
 			}
 		})
 	}
@@ -136,8 +140,8 @@ func TestPadBoth(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := PadBoth(tt.s, tt.length, tt.padding); got != tt.want {
-				t.Errorf("PadBoth(%q, %v, %q) = %v, want %v", tt.s, tt.length, tt.padding, got, tt.want)
+			if got := stringx.PadBoth(tt.s, tt.length, tt.padding); got != tt.want {
+				t.Errorf("stringx.PadBoth(%q, %v, %q) = %v, want %v", tt.s, tt.length, tt.padding, got, tt.want)
 			}
 		})
 	}
